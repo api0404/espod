@@ -86,9 +86,13 @@ void L0x04::processLingo(esPod *esp, const byte *byteArray, uint32_t len)
         }
         break;
 
-        case L0x04_SelectDBRecord: // Used for browsing ?
+        case L0x04_SelectDBRecord: // Select a record in the current database hierarchy
         {
-            ESP_LOGI(__func__, "CMD 0x%04x SelectDBRecord", cmdID);
+            category = byteArray[2];
+            const uint32_t recordId = swap_endian<uint32_t>(*(uint32_t *)&byteArray[3]);
+            ESP_LOGI(__func__, "CMD 0x%04x SelectDBRecord category: 0x%02x record: %d", cmdID, category, recordId);
+            if (esp->_databaseSelectedHandler)
+                esp->_databaseSelectedHandler((DB_CATEGORY)category, recordId);
             L0x04::_0x01_iPodAck(esp, iPodAck_OK, cmdID);
         }
         break;
@@ -97,7 +101,12 @@ void L0x04::processLingo(esPod *esp, const byte *byteArray, uint32_t len)
         {
             category = byteArray[2];
             ESP_LOGI(__func__, "CMD 0x%04x GetNumberCategorizedDBRecords category: 0x%02x", cmdID, category);
-            if (category == DB_CAT_TRACK)
+            if (esp->_databaseCountHandler)
+            {
+                L0x04::_0x19_ReturnNumberCategorizedDBRecords(
+                    esp, esp->_databaseCountHandler((DB_CATEGORY)category));
+            }
+            else if (category == DB_CAT_TRACK)
             {
                 L0x04::_0x19_ReturnNumberCategorizedDBRecords(esp, esp->totalNumberTracks); // Say there are fixed, large amount of tracks
             }
@@ -115,6 +124,16 @@ void L0x04::processLingo(esPod *esp, const byte *byteArray, uint32_t len)
             counts = swap_endian<uint32_t>(*(uint32_t *)&byteArray[7]);
 
             ESP_LOGI(__func__, "CMD 0x%04x RetrieveCategorizedDatabaseRecords category: 0x%02x from %d for %d counts", cmdID, category, startIndex, counts);
+            if (esp->_databaseRecordHandler)
+            {
+                char recordName[255];
+                for (uint32_t i = startIndex; i < startIndex + counts; i++)
+                {
+                    if (esp->_databaseRecordHandler((DB_CATEGORY)category, i, recordName, sizeof(recordName)))
+                        L0x04::_0x1B_ReturnCategorizedDatabaseRecord(esp, i, recordName);
+                }
+                break;
+            }
             switch (category)
             {
             case DB_CAT_PLAYLIST:

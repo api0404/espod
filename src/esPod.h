@@ -23,6 +23,9 @@ class esPod
 
 public:
     typedef void playStatusHandler_t(PB_COMMAND playControlCommand); // Type definition for the external callback to control playback FROM the espod object
+    typedef uint32_t databaseCountHandler_t(DB_CATEGORY category);
+    typedef bool databaseRecordHandler_t(DB_CATEGORY category, uint32_t recordId, char *recordName, size_t recordNameSize);
+    typedef void databaseSelectedHandler_t(DB_CATEGORY category, uint32_t recordId);
 
     // State variables
     bool extendedInterfaceModeActive = false; // Indicates if the extended interface mode is accessible (Lingo 0x04 mostly)
@@ -84,6 +87,11 @@ public:
     /// @brief Function to attach the playback controller that allows the espod instance to perform playback operations on the audio source
     /// @param playHandler Type-function of a playStatusHandler, linking the espod instance to the audio source controls
     void attachPlayControlHandler(playStatusHandler_t playHandler);
+
+    /// @brief Attaches handlers used to expose and select virtual database records.
+    void attachDatabaseHandlers(databaseCountHandler_t countHandler,
+                                databaseRecordHandler_t recordHandler,
+                                databaseSelectedHandler_t selectedHandler);
 
     // Useful wrappers for A2DP and AVRC integration
 
@@ -231,4 +239,7 @@ private:
 
     // Handler functions
     playStatusHandler_t *_playStatusHandler = nullptr; // Pointer to external callback used to let the espod instance control playback
+    databaseCountHandler_t *_databaseCountHandler = nullptr;
+    databaseRecordHandler_t *_databaseRecordHandler = nullptr;
+    databaseSelectedHandler_t *_databaseSelectedHandler = nullptr;
 };
