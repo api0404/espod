@@ -129,6 +129,8 @@ void esPod::resetState()
     // TrackList variables
     currentTrackIndex = 0;
     prevTrackIndex = TOTAL_NUM_TRACKS - 1;
+    reportedTrackNumber = 0;
+    reportedTrackCount = TOTAL_NUM_TRACKS;
     for (uint16_t i = 0; i < TOTAL_NUM_TRACKS; i++)
         trackList[i] = 0;
     trackListPosition = 0;
@@ -334,6 +336,28 @@ void esPod::updateTrackDuration(uint32_t incTrackDuration)
             ESP_LOGD(__func__, "Track duration already updated to %d", trackDuration);
     }
     _checkAllMetaUpdated();
+}
+
+void esPod::updateTrackGenre(const char *incTrackGenre)
+{
+    const char *genre = incTrackGenre != nullptr ? incTrackGenre : "";
+    if (strcmp(trackGenre, genre) != 0)
+    {
+        strlcpy(trackGenre, genre, sizeof(trackGenre));
+        ESP_LOGD(__func__, "Track genre updated to %s", trackGenre);
+    }
+}
+
+void esPod::updateTrackNumber(uint32_t incTrackNumber)
+{
+    reportedTrackNumber = incTrackNumber;
+    ESP_LOGD(__func__, "Reported track number updated to %lu", (unsigned long)reportedTrackNumber);
+}
+
+void esPod::updateTotalTrackCount(uint32_t incTotalTrackCount)
+{
+    reportedTrackCount = incTotalTrackCount > 0 ? incTotalTrackCount : TOTAL_NUM_TRACKS;
+    ESP_LOGD(__func__, "Reported total track count updated to %lu", (unsigned long)reportedTrackCount);
 }
 
 void esPod::_checkAllMetaUpdated()

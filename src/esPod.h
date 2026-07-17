@@ -44,6 +44,8 @@ public:
     uint32_t trackDuration = 1;      // Track duration in ms
     uint32_t prevTrackDuration = 0;  // Previous track duration in ms
     uint32_t playPosition = 0;       // Current playing position of the track in ms
+    uint32_t reportedTrackNumber = 0; // AVRCP track number (one-based; 0 when unavailable)
+    uint32_t reportedTrackCount = TOTAL_NUM_TRACKS; // AVRCP total track count when available
 
     // Playback Engine
     byte playStatus = PB_STATE_PAUSED;            // Current state of the PBEngine
@@ -128,6 +130,15 @@ public:
     /// @brief Checks and updates the track duration in the espod instance.
     /// @param incTrackDuration Track duration in ms.
     void updateTrackDuration(uint32_t incTrackDuration);
+
+    /// @brief Updates the genre exposed through Extended Interface track-info responses.
+    void updateTrackGenre(const char *incTrackGenre);
+
+    /// @brief Updates the one-based current track number reported to the accessory.
+    void updateTrackNumber(uint32_t incTrackNumber);
+
+    /// @brief Updates the total track count reported to the accessory.
+    void updateTotalTrackCount(uint32_t incTotalTrackCount);
 
 private:
     // UART parameters

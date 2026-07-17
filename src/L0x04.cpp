@@ -136,7 +136,35 @@ void L0x04::processLingo(esPod *esp, const byte *byteArray, uint32_t len)
             }
             switch (category)
             {
+            default:
+                if (esp->_databaseRecordHandler)
+                {
+                    char recordName[255];
+                    for (uint32_t i = startIndex; i < startIndex + counts; i++)
+                    {
+                        if (esp->_databaseRecordHandler((DB_CATEGORY)category, i, recordName, sizeof(recordName)))
+                            L0x04::_0x1B_ReturnCategorizedDatabaseRecord(esp, i, recordName);
+                        else
+                            L0x04::_0x01_iPodAck(esp, iPodAck_BadParam, cmdID);
+                    }
+                    break;
+                }
+                ESP_LOGW(__func__, "CMD 0x%04x RetrieveCategorizedDatabaseRecords category: 0x%02x not recognised", cmdID, category);
+                L0x04::_0x01_iPodAck(esp, iPodAck_BadParam, cmdID);
+                break;
             case DB_CAT_PLAYLIST:
+                if (esp->_databaseRecordHandler)
+                {
+                    char recordName[255];
+                    for (uint32_t i = startIndex; i < startIndex + counts; i++)
+                    {
+                        if (esp->_databaseRecordHandler((DB_CATEGORY)category, i, recordName, sizeof(recordName)))
+                            L0x04::_0x1B_ReturnCategorizedDatabaseRecord(esp, i, recordName);
+                        else
+                            L0x04::_0x01_iPodAck(esp, iPodAck_BadParam, cmdID);
+                    }
+                    break;
+                }
                 for (uint32_t i = startIndex; i < startIndex + counts; i++)
                 {
                     L0x04::_0x1B_ReturnCategorizedDatabaseRecord(esp, i, esp->playList);
@@ -184,10 +212,6 @@ void L0x04::processLingo(esPod *esp, const byte *byteArray, uint32_t len)
                     L0x04::_0x1B_ReturnCategorizedDatabaseRecord(esp, i, noCat);
                 }
                 break;
-            default:
-                ESP_LOGW(__func__, "CMD 0x%04x RetrieveCategorizedDatabaseRecords category: 0x%02x not recognised", cmdID, category);
-                L0x04::_0x01_iPodAck(esp, iPodAck_BadParam, cmdID);
-                break;
             }
         }
         break;
@@ -202,7 +226,8 @@ void L0x04::processLingo(esPod *esp, const byte *byteArray, uint32_t len)
         case L0x04_GetCurrentPlayingTrackIndex: // Get the uint32 index of the currently playing song
         {
             ESP_LOGI(__func__, "CMD 0x%04x GetCurrentPlayingTrackIndex", cmdID);
-            L0x04::_0x1F_ReturnCurrentPlayingTrackIndex(esp, esp->currentTrackIndex);
+            const uint32_t reportedIndex = esp->reportedTrackNumber > 0 ? esp->reportedTrackNumber - 1 : esp->currentTrackIndex;
+            L0x04::_0x1F_ReturnCurrentPlayingTrackIndex(esp, reportedIndex);
         }
         break;
 
@@ -483,7 +508,7 @@ void L0x04::processLingo(esPod *esp, const byte *byteArray, uint32_t len)
         case L0x04_GetNumPlayingTracks: // Systematically return TOTAL_NUM_TRACKS
         {
             ESP_LOGI(__func__, "CMD 0x%04x GetNumPlayingTracks", cmdID);
-            L0x04::_0x36_ReturnNumPlayingTracks(esp, esp->totalNumberTracks);
+            L0x04::_0x36_ReturnNumPlayingTracks(esp, esp->reportedTrackCount);
         }
         break;
 
