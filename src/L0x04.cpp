@@ -289,6 +289,12 @@ void L0x04::processLingo(esPod *esp, const byte *byteArray, uint32_t len)
         {
             tempTrackIndex = swap_endian<uint32_t>(*((uint32_t *)&byteArray[2]));
             ESP_LOGI(__func__, "CMD 0x%04x PlayCurrentSelection index %d", cmdID, tempTrackIndex);
+            if (esp->_virtualTrackSelectionHandler && esp->_virtualTrackSelectionHandler(tempTrackIndex))
+            {
+                ESP_LOGI(__func__, "Virtual track selection %d absorbed", tempTrackIndex);
+                L0x04::_0x01_iPodAck(esp, iPodAck_OK, cmdID);
+                break;
+            }
             if (esp->playStatus != PB_STATE_PLAYING)
             {
                 esp->play(); // Force play
@@ -516,6 +522,12 @@ void L0x04::processLingo(esPod *esp, const byte *byteArray, uint32_t len)
         {
             tempTrackIndex = swap_endian<uint32_t>(*((uint32_t *)&byteArray[2]));
             ESP_LOGI(__func__, "CMD 0x%04x SetCurrentPlayingTrack index %d", cmdID, tempTrackIndex);
+            if (esp->_virtualTrackSelectionHandler && esp->_virtualTrackSelectionHandler(tempTrackIndex))
+            {
+                ESP_LOGI(__func__, "Virtual track selection %d absorbed", tempTrackIndex);
+                L0x04::_0x01_iPodAck(esp, iPodAck_OK, cmdID);
+                break;
+            }
             if (esp->playStatus != PB_STATE_PLAYING)
             {
                 esp->play();

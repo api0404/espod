@@ -180,6 +180,12 @@ void esPod::attachDatabaseHandlers(databaseCountHandler_t countHandler,
     ESP_LOGD(__func__, "Database handlers attached.");
 }
 
+void esPod::attachVirtualTrackSelectionHandler(virtualTrackSelectionHandler_t selectionHandler)
+{
+    _virtualTrackSelectionHandler = selectionHandler;
+    ESP_LOGD(__func__, "Virtual track selection handler attached.");
+}
+
 void esPod::play(bool noLoop)
 {
     playStatus = PB_STATE_PLAYING;

@@ -26,6 +26,7 @@ public:
     typedef uint32_t databaseCountHandler_t(DB_CATEGORY category);
     typedef bool databaseRecordHandler_t(DB_CATEGORY category, uint32_t recordId, char *recordName, size_t recordNameSize);
     typedef void databaseSelectedHandler_t(DB_CATEGORY category, uint32_t recordId);
+    typedef bool virtualTrackSelectionHandler_t(uint32_t trackIndex);
 
     // State variables
     bool extendedInterfaceModeActive = false; // Indicates if the extended interface mode is accessible (Lingo 0x04 mostly)
@@ -94,6 +95,10 @@ public:
     void attachDatabaseHandlers(databaseCountHandler_t countHandler,
                                 databaseRecordHandler_t recordHandler,
                                 databaseSelectedHandler_t selectedHandler);
+
+    /// @brief Installs an optional, non-blocking filter for virtual database tracks.
+    /// Returning true absorbs a subsequent track-play request before it reaches playback.
+    void attachVirtualTrackSelectionHandler(virtualTrackSelectionHandler_t selectionHandler);
 
     // Useful wrappers for A2DP and AVRC integration
 
@@ -253,4 +258,5 @@ private:
     databaseCountHandler_t *_databaseCountHandler = nullptr;
     databaseRecordHandler_t *_databaseRecordHandler = nullptr;
     databaseSelectedHandler_t *_databaseSelectedHandler = nullptr;
+    virtualTrackSelectionHandler_t *_virtualTrackSelectionHandler = nullptr;
 };
