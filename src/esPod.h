@@ -23,6 +23,9 @@ class esPod
 
 public:
     typedef void playStatusHandler_t(PB_COMMAND playControlCommand); // Type definition for the external callback to control playback FROM the espod object
+    typedef uint32_t databaseCountHandler_t(DB_CATEGORY category);
+    typedef bool databaseRecordHandler_t(DB_CATEGORY category, uint32_t recordIndex, char *recordName, size_t recordNameSize);
+    typedef void databaseSelectionHandler_t(DB_CATEGORY category, uint32_t recordIndex);
 
     // State variables
     bool extendedInterfaceModeActive = false; // Indicates if the extended interface mode is accessible (Lingo 0x04 mostly)
@@ -41,6 +44,8 @@ public:
     uint32_t trackDuration = 1;      // Track duration in ms
     uint32_t prevTrackDuration = 0;  // Previous track duration in ms
     uint32_t playPosition = 0;       // Current playing position of the track in ms
+    uint32_t reportedTrackNumber = 0; // AVRCP track number (one-based; 0 when unavailable)
+    uint32_t reportedTrackCount = TOTAL_NUM_TRACKS; // AVRCP total track count when available
 
     // Playback Engine
     byte playStatus = PB_STATE_PAUSED;            // Current state of the PBEngine
@@ -85,6 +90,11 @@ public:
     /// @param playHandler Type-function of a playStatusHandler, linking the espod instance to the audio source controls
     void attachPlayControlHandler(playStatusHandler_t playHandler);
 
+    /// @brief Attaches optional providers for virtual iPod database categories.
+    /// The handlers are called from the iPod protocol task and must return promptly.
+    void attachDatabaseHandlers(databaseCountHandler_t countHandler, databaseRecordHandler_t recordHandler,
+                                databaseSelectionHandler_t selectionHandler);
+
     // Useful wrappers for A2DP and AVRC integration
 
     /// @brief Sets the PB engine to play
@@ -120,6 +130,15 @@ public:
     /// @brief Checks and updates the track duration in the espod instance.
     /// @param incTrackDuration Track duration in ms.
     void updateTrackDuration(uint32_t incTrackDuration);
+
+    /// @brief Updates the genre exposed through Extended Interface track-info responses.
+    void updateTrackGenre(const char *incTrackGenre);
+
+    /// @brief Updates the one-based current track number reported to the accessory.
+    void updateTrackNumber(uint32_t incTrackNumber);
+
+    /// @brief Updates the total track count reported to the accessory.
+    void updateTotalTrackCount(uint32_t incTotalTrackCount);
 
 private:
     // UART parameters
@@ -231,4 +250,7 @@ private:
 
     // Handler functions
     playStatusHandler_t *_playStatusHandler = nullptr; // Pointer to external callback used to let the espod instance control playback
+    databaseCountHandler_t *_databaseCountHandler = nullptr;
+    databaseRecordHandler_t *_databaseRecordHandler = nullptr;
+    databaseSelectionHandler_t *_databaseSelectionHandler = nullptr;
 };
