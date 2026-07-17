@@ -170,12 +170,13 @@ void esPod::attachPlayControlHandler(playStatusHandler_t playHandler)
     ESP_LOGD(__func__, "PlayControlHandler attached.");
 }
 
-void esPod::attachDatabaseHandlers(databaseCountHandler_t countHandler, databaseRecordHandler_t recordHandler,
-                                   databaseSelectionHandler_t selectionHandler)
+void esPod::attachDatabaseHandlers(databaseCountHandler_t countHandler,
+                                   databaseRecordHandler_t recordHandler,
+                                   databaseSelectedHandler_t selectedHandler)
 {
     _databaseCountHandler = countHandler;
     _databaseRecordHandler = recordHandler;
-    _databaseSelectionHandler = selectionHandler;
+    _databaseSelectedHandler = selectedHandler;
     ESP_LOGD(__func__, "Database handlers attached.");
 }
 
